@@ -77,6 +77,8 @@ function formatMb(mb) {
     return `${mb.toFixed(1)} MB`;
 }
 
+const MENU_ALIGNMENTS = {left: 0, center: 0.5, right: 1};
+
 export default class InternetUsageExtension extends Extension {
     enable() {
         this._settings = this.getSettings();
@@ -86,7 +88,9 @@ export default class InternetUsageExtension extends Extension {
         this._usage = null;
         this._lastUpdated = null;
 
-        this._indicator = new PanelMenu.Button(0.0, this.metadata.name, false);
+        const menuAlignment = MENU_ALIGNMENTS[this._settings.get_string('menu-alignment')];
+        this._indicator = new PanelMenu.Button(menuAlignment, this.metadata.name, false);
+        this._applyMenuAlignment();
         this._panelIcon = new St.Icon({
             icon_name: 'dialog-warning-symbolic',
             style_class: 'system-status-icon',
@@ -132,7 +136,12 @@ export default class InternetUsageExtension extends Extension {
 
         Main.panel.addToStatusArea(this.uuid, this._indicator);
 
-        this._settingsChangedId = this._settings.connect('changed', () => {
+        this._settingsChangedId = this._settings.connect('changed', (_settings, key) => {
+            if (key === 'menu-alignment') {
+                this._applyMenuAlignment();
+                return;
+            }
+
             this._scheduleRefresh();
             this._fetchUsage();
         });
@@ -165,6 +174,12 @@ export default class InternetUsageExtension extends Extension {
         }
     }
 
+    _applyMenuAlignment() {
+        const alignment = MENU_ALIGNMENTS[this._settings.get_string('menu-alignment')];
+        this._indicator.menu._arrowAlignment = alignment;
+        this._indicator.menu.setSourceAlignment(alignment);
+    }
+
     _scheduleRefresh() {
         if (this._timerId)
             GLib.Source.remove(this._timerId);
@@ -187,6 +202,11 @@ export default class InternetUsageExtension extends Extension {
         const cancellable = new Gio.Cancellable();
         this._cancellable = cancellable;
         this._summaryItem.label.text = 'Loading usage…';
+        this._trafficItem.visible = false;
+        this._ipItem.visible = false;
+        this._progressItem.visible = false;
+        this._progressLabelItem.visible = false;
+        this._updatedItem.visible = false;
 
         this._session.send_and_read_async(
             message,
@@ -235,6 +255,7 @@ export default class InternetUsageExtension extends Extension {
             this._progressLabelItem.label.text = `${formatGb(totalMb)} of ${capGb.toFixed(1)} GB`;
         }
         this._updatedItem.label.text = `Updated ${this._lastUpdated.toLocaleTimeString()}`;
+        this._updatedItem.visible = true;
     }
 
     _showError(message) {
@@ -249,5 +270,6 @@ export default class InternetUsageExtension extends Extension {
         this._progressItem.visible = false;
         this._progressLabelItem.visible = false;
         this._updatedItem.label.text = '';
+        this._updatedItem.visible = false;
     }
 }

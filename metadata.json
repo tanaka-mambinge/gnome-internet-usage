@@ -2,6 +2,7 @@
   "uuid": "internetusage@iamt12e",
   "name": "Login.net Usage",
   "description": "Show internet usage from a MikroTik hotspot status page",
+  "url": "https://github.com/tanaka-mambinge/gnome-internet-usage",
   "settings-schema": "org.gnome.shell.extensions.internetusage",
   "version": 1,
   "shell-version": ["45", "46", "47", "48", "49", "50"]

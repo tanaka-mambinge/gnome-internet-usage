@@ -10,6 +10,7 @@ Values reported in `MiB` are converted to decimal `MB` (`1 MiB = 1.048576 MB`). 
 
 ## Settings
 
+- **Menu alignment:** left, center (default), or right relative to the panel item.
 - **Status page address:** defaults to `http://login.net/status`.
 - **Check usage every:** defaults to 60 seconds.
 - **Maximum usage:** decimal GB; `0` disables the progress bar.

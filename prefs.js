@@ -10,6 +10,23 @@ export default class InternetUsagePreferences extends ExtensionPreferences {
         const page = new Adw.PreferencesPage({title: 'Usage'});
         window.add(page);
 
+        const panelGroup = new Adw.PreferencesGroup({
+            title: 'Panel menu',
+            description: 'Choose how the menu lines up with its panel item.',
+        });
+        page.add(panelGroup);
+
+        const alignments = ['left', 'center', 'right'];
+        const alignmentRow = new Adw.ComboRow({
+            title: 'Menu alignment',
+            model: Gtk.StringList.new(['Left', 'Center', 'Right']),
+        });
+        alignmentRow.selected = alignments.indexOf(settings.get_string('menu-alignment'));
+        alignmentRow.connect('notify::selected', () => {
+            settings.set_string('menu-alignment', alignments[alignmentRow.selected]);
+        });
+        panelGroup.add(alignmentRow);
+
         const connectionGroup = new Adw.PreferencesGroup({
             title: 'Connection',
             description: 'Choose the hotspot status page and how often to check it.',

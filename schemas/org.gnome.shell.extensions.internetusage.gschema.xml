@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist>
   <schema id="org.gnome.shell.extensions.internetusage" path="/org/gnome/shell/extensions/internetusage/">
+    <key name="menu-alignment" type="s">
+      <default>'center'</default>
+      <summary>Panel menu alignment</summary>
+      <description>Align the popup menu to the left, center, or right of the panel item.</description>
+      <choices>
+        <choice value="left"/>
+        <choice value="center"/>
+        <choice value="right"/>
+      </choices>
+    </key>
     <key name="status-url" type="s">
       <default>'http://login.net/status'</default>
       <summary>Hotspot status page address</summary>
