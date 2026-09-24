@@ -16,7 +16,18 @@ Values reported in `MiB` are converted to decimal `MB` (`1 MiB = 1.048576 MB`). 
 - **Use 12-hour time:** off by default, so the update time uses a 24-hour clock.
 - When the status page cannot be read, the panel shows a warning icon; open the panel item for the error details and status page link.
 
-For a local install, copy this folder into `~/.local/share/gnome-shell/extensions/internetusage@iamt12e/`, compile its settings schema with `glib-compile-schemas ~/.local/share/gnome-shell/extensions/internetusage@iamt12e/schemas`, then enable **Login.net Usage** in the Extensions app. The extension preferences let you change the address, refresh interval, and time format.
+## Install from Git
+
+Clone the repository into GNOME's extension folder, compile its settings schema, then enable it:
+
+```sh
+mkdir -p ~/.local/share/gnome-shell/extensions
+git clone https://github.com/tanaka-mambinge/gnome-internet-usage.git ~/.local/share/gnome-shell/extensions/internetusage@iamt12e
+glib-compile-schemas ~/.local/share/gnome-shell/extensions/internetusage@iamt12e/schemas
+gnome-extensions enable internetusage@iamt12e
+```
+
+The extension preferences let you change the status page address, refresh interval, and time format.
 
 ## Test without logging out
 
