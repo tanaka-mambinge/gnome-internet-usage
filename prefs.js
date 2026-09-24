@@ -27,6 +27,16 @@ export default class InternetUsagePreferences extends ExtensionPreferences {
         });
         panelGroup.add(alignmentRow);
 
+        const timeGroup = new Adw.PreferencesGroup({
+            title: 'Time display',
+            description: 'Choose how the update time is shown.',
+        });
+        page.add(timeGroup);
+
+        const timeFormatRow = new Adw.SwitchRow({title: 'Use 12-hour time'});
+        settings.bind('use-12-hour-time', timeFormatRow, 'active', Gio.SettingsBindFlags.DEFAULT);
+        timeGroup.add(timeFormatRow);
+
         const connectionGroup = new Adw.PreferencesGroup({
             title: 'Connection',
             description: 'Choose the hotspot status page and how often to check it.',
@@ -51,25 +61,5 @@ export default class InternetUsagePreferences extends ExtensionPreferences {
         refreshRow.connect('notify::value', () => settings.set_uint('refresh-interval', Math.round(refreshRow.value)));
         connectionGroup.add(refreshRow);
 
-        const usageGroup = new Adw.PreferencesGroup({
-            title: 'Usage limit',
-            description: 'Set a usage limit to show progress. Set it to 0 to show usage without a progress bar.',
-        });
-        page.add(usageGroup);
-
-        const limitRow = new Adw.SpinRow({
-            title: 'Maximum usage (GB)',
-            adjustment: new Gtk.Adjustment({
-                lower: 0,
-                upper: 10000,
-                step_increment: 0.1,
-                page_increment: 1,
-                value: settings.get_double('max-usage-gb'),
-            }),
-            digits: 1,
-        });
-        limitRow.connect('notify::value', () => settings.set_double('max-usage-gb', limitRow.value));
-        settings.bind('max-usage-gb', limitRow, 'value', Gio.SettingsBindFlags.DEFAULT);
-        usageGroup.add(limitRow);
     }
 }

@@ -42,7 +42,6 @@ function parseStatusPage(html) {
     const rows = [...html.matchAll(/<tr\b[^>]*>([\s\S]*?)<\/tr>/gi)];
     let uploadMb = null;
     let downloadMb = null;
-    let ipAddress = '';
 
     for (const [, row] of rows) {
         const cells = [...row.matchAll(/<t[dh]\b[^>]*>([\s\S]*?)<\/t[dh]>/gi)]
@@ -57,8 +56,6 @@ function parseStatusPage(html) {
                 uploadMb = parseDataAmount(amounts[0][1]);
                 downloadMb = parseDataAmount(amounts[1][1]);
             }
-        } else if (label === 'ip address') {
-            ipAddress = cells[1];
         }
     }
 
@@ -66,15 +63,36 @@ function parseStatusPage(html) {
         !Number.isFinite(uploadMb) || !Number.isFinite(downloadMb))
         throw new Error('Could not find upload and download totals on the status page.');
 
-    return {uploadMb, downloadMb, totalMb: uploadMb + downloadMb, ipAddress};
+    return {uploadMb, downloadMb, totalMb: uploadMb + downloadMb};
 }
 
 function formatGb(mb) {
-    return `${(mb / 1000).toFixed(1)} GB`;
+    return `${(mb / 1000).toFixed(2)} GB`;
 }
 
-function formatMb(mb) {
-    return `${mb.toFixed(1)} MB`;
+function createIconMenuItem(text, iconName, activate, rotationAngle = 0, iconOffset = 0) {
+    const item = new PopupMenu.PopupBaseMenuItem();
+    const row = new St.BoxLayout({x_expand: true});
+    const icon = new St.Icon({
+        icon_name: iconName,
+        style_class: 'popup-menu-icon',
+        y_align: Clutter.ActorAlign.CENTER,
+    });
+    if (rotationAngle)
+        icon.set_rotation_angle(Clutter.RotateAxis.Z_AXIS, rotationAngle);
+    if (iconOffset)
+        icon.set_translation(iconOffset, 0, 0);
+
+    const label = new St.Label({
+        text,
+        x_expand: true,
+        y_align: Clutter.ActorAlign.CENTER,
+    });
+    row.add_child(icon);
+    row.add_child(label);
+    item.add_child(row);
+    item.connect('activate', activate);
+    return item;
 }
 
 const MENU_ALIGNMENTS = {left: 0, center: 0.5, right: 1};
@@ -91,54 +109,50 @@ export default class InternetUsageExtension extends Extension {
         const menuAlignment = MENU_ALIGNMENTS[this._settings.get_string('menu-alignment')];
         this._indicator = new PanelMenu.Button(menuAlignment, this.metadata.name, false);
         this._applyMenuAlignment();
+        this._panelBox = new St.BoxLayout({style_class: 'panel-status-menu-box'});
+        this._indicator.add_child(this._panelBox);
         this._panelIcon = new St.Icon({
             icon_name: 'dialog-warning-symbolic',
             style_class: 'system-status-icon',
             accessible_name: 'Usage unavailable',
             visible: false,
         });
-        this._indicator.add_child(this._panelIcon);
+        this._panelBox.add_child(this._panelIcon);
         this._panelLabel = new St.Label({
             text: '— GB',
             y_align: Clutter.ActorAlign.CENTER,
-            style_class: 'system-status-icon',
         });
-        this._indicator.add_child(this._panelLabel);
+        this._panelBox.add_child(this._panelLabel);
 
         this._summaryItem = new PopupMenu.PopupMenuItem('Loading usage…', {reactive: false});
         this._indicator.menu.addMenuItem(this._summaryItem);
-        this._trafficItem = new PopupMenu.PopupMenuItem('', {reactive: false});
-        this._indicator.menu.addMenuItem(this._trafficItem);
-        this._ipItem = new PopupMenu.PopupMenuItem('', {reactive: false});
-        this._indicator.menu.addMenuItem(this._ipItem);
-        this._progressItem = new PopupMenu.PopupBaseMenuItem({reactive: false});
-        this._progressTrack = new St.Widget({
-            width: 220,
-            height: 8,
-            style: 'background-color: rgba(127, 127, 127, 0.35); border-radius: 4px;',
-        });
-        this._progressFill = new St.Widget({
-            width: 0,
-            height: 8,
-            style: 'background-color: #3584e4; border-radius: 4px;',
-        });
-        this._progressTrack.add_child(this._progressFill);
-        this._progressItem.add_child(this._progressTrack);
-        this._indicator.menu.addMenuItem(this._progressItem);
-        this._progressLabelItem = new PopupMenu.PopupMenuItem('', {reactive: false});
-        this._indicator.menu.addMenuItem(this._progressLabelItem);
+        this._downloadItem = new PopupMenu.PopupImageMenuItem('', 'go-down-symbolic', {reactive: false});
+        this._indicator.menu.addMenuItem(this._downloadItem);
+        this._uploadItem = new PopupMenu.PopupImageMenuItem('', 'go-up-symbolic', {reactive: false});
+        this._indicator.menu.addMenuItem(this._uploadItem);
         this._updatedItem = new PopupMenu.PopupMenuItem('', {reactive: false});
         this._indicator.menu.addMenuItem(this._updatedItem);
         this._indicator.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-        this._indicator.menu.addAction('Refresh now', () => this._fetchUsage());
-        this._indicator.menu.addAction('Open status page', () => this._openStatusPage());
-        this._indicator.menu.addAction('Usage settings', () => this.openPreferences());
+        this._refreshItem = createIconMenuItem('Refresh now', 'view-refresh-symbolic',
+            () => this._fetchUsage(), 0, -4);
+        this._indicator.menu.addMenuItem(this._refreshItem);
+        this._statusPageItem = createIconMenuItem('Open status page', 'go-up-symbolic',
+            () => this._openStatusPage(), 45, 5);
+        this._indicator.menu.addMenuItem(this._statusPageItem);
+        this._settingsItem = createIconMenuItem('Usage settings', 'emblem-system-symbolic',
+            () => this.openPreferences(), 0, -4);
+        this._indicator.menu.addMenuItem(this._settingsItem);
 
         Main.panel.addToStatusArea(this.uuid, this._indicator);
 
         this._settingsChangedId = this._settings.connect('changed', (_settings, key) => {
             if (key === 'menu-alignment') {
                 this._applyMenuAlignment();
+                return;
+            }
+
+            if (key === 'use-12-hour-time') {
+                this._updateDisplay();
                 return;
             }
 
@@ -202,10 +216,8 @@ export default class InternetUsageExtension extends Extension {
         const cancellable = new Gio.Cancellable();
         this._cancellable = cancellable;
         this._summaryItem.label.text = 'Loading usage…';
-        this._trafficItem.visible = false;
-        this._ipItem.visible = false;
-        this._progressItem.visible = false;
-        this._progressLabelItem.visible = false;
+        this._downloadItem.visible = false;
+        this._uploadItem.visible = false;
         this._updatedItem.visible = false;
 
         this._session.send_and_read_async(
@@ -235,26 +247,24 @@ export default class InternetUsageExtension extends Extension {
         if (!this._usage)
             return;
 
-        const {totalMb, uploadMb, downloadMb, ipAddress} = this._usage;
-        const capGb = this._settings.get_double('max-usage-gb');
-        const totalGb = totalMb / 1000;
+        const {totalMb, uploadMb, downloadMb} = this._usage;
         this._panelLabel.text = formatGb(totalMb);
         this._panelLabel.visible = true;
         this._panelIcon.visible = false;
         this._indicator.accessible_name = `Internet usage: ${formatGb(totalMb)}`;
         this._summaryItem.label.text = `Total used: ${formatGb(totalMb)}`;
-        this._trafficItem.visible = true;
-        this._trafficItem.label.text = `Downloaded ${formatMb(downloadMb)} · Uploaded ${formatMb(uploadMb)}`;
-        this._ipItem.label.text = ipAddress ? `IP address: ${ipAddress}` : 'IP address unavailable';
-        this._ipItem.visible = true;
-        this._progressItem.visible = capGb > 0;
-        this._progressLabelItem.visible = capGb > 0;
-        if (capGb > 0) {
-            const fraction = Math.min(1, totalGb / capGb);
-            this._progressFill.set_width(Math.round(220 * fraction));
-            this._progressLabelItem.label.text = `${formatGb(totalMb)} of ${capGb.toFixed(1)} GB`;
-        }
-        this._updatedItem.label.text = `Updated ${this._lastUpdated.toLocaleTimeString()}`;
+        this._downloadItem.label.text = `Downloaded ${formatGb(downloadMb)}`;
+        this._downloadItem.visible = true;
+        this._uploadItem.label.text = `Uploaded ${formatGb(uploadMb)}`;
+        this._uploadItem.visible = true;
+        const hourCycle = this._settings.get_boolean('use-12-hour-time') ? 'h12' : 'h23';
+        const time = this._lastUpdated.toLocaleTimeString(undefined, {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hourCycle,
+        });
+        this._updatedItem.label.text = `Updated ${time}`;
         this._updatedItem.visible = true;
     }
 
@@ -265,10 +275,8 @@ export default class InternetUsageExtension extends Extension {
         this._panelIcon.visible = true;
         this._indicator.accessible_name = 'Internet usage unavailable';
         this._summaryItem.label.text = 'Could not read usage. Check connection and status page.';
-        this._trafficItem.visible = false;
-        this._ipItem.visible = false;
-        this._progressItem.visible = false;
-        this._progressLabelItem.visible = false;
+        this._downloadItem.visible = false;
+        this._uploadItem.visible = false;
         this._updatedItem.label.text = '';
         this._updatedItem.visible = false;
     }

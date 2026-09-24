@@ -16,15 +16,15 @@
       <summary>Hotspot status page address</summary>
       <description>The address of the MikroTik hotspot status page.</description>
     </key>
-    <key name="max-usage-gb" type="d">
-      <default>0.0</default>
-      <summary>Maximum usage in decimal gigabytes</summary>
-      <description>Set to zero to hide progress tracking.</description>
-    </key>
     <key name="refresh-interval" type="u">
       <default>60</default>
       <summary>Usage refresh interval in seconds</summary>
       <description>How often the extension fetches the status page.</description>
+    </key>
+    <key name="use-12-hour-time" type="b">
+      <default>false</default>
+      <summary>Use 12-hour time</summary>
+      <description>Show the update time using a 12-hour clock instead of a 24-hour clock.</description>
     </key>
   </schema>
 </schemalist>
