@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.internetusage" path="/org/gnome/shell/extensions/internetusage/">
+    <key name="status-url" type="s">
+      <default>'http://login.net/status'</default>
+      <summary>Hotspot status page address</summary>
+      <description>The address of the MikroTik hotspot status page.</description>
+    </key>
+    <key name="max-usage-gb" type="d">
+      <default>0.0</default>
+      <summary>Maximum usage in decimal gigabytes</summary>
+      <description>Set to zero to hide progress tracking.</description>
+    </key>
+    <key name="refresh-interval" type="u">
+      <default>60</default>
+      <summary>Usage refresh interval in seconds</summary>
+      <description>How often the extension fetches the status page.</description>
+    </key>
+  </schema>
+</schemalist>

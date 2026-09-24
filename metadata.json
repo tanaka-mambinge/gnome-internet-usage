@@ -1,0 +1,8 @@
+{
+  "uuid": "internetusage@t12e.dev",
+  "name": "Login.net Usage",
+  "description": "Show internet usage from a MikroTik hotspot status page",
+  "settings-schema": "org.gnome.shell.extensions.internetusage",
+  "version": 1,
+  "shell-version": ["45", "46", "47", "48", "49", "50"]
+}
