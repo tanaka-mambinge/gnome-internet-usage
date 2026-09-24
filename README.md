@@ -4,7 +4,7 @@ A GNOME Shell extension that reads the upload and download totals from a MikroTi
 
 ## Releases
 
-Releases use semantic version tags: `vMAJOR.MINOR.PATCH` (for example, `v0.1.0`). Increase the patch number for fixes, the minor number for compatible features, and the major number for breaking changes. The numeric `version` in `metadata.json` is GNOME Extensions' upload version; increase it for each upload there. Keep it separate from the Git tag.
+Releases use semantic version tags: `vMAJOR.MINOR.PATCH` (for example, `v0.1.0`). Increase the patch number for fixes, the minor number for compatible features, and the major number for breaking changes. Git tags are the project's release versions. The `version` field in `metadata.json` is reserved for GNOME Extensions' internal use.
 
 Values reported in `MiB` are converted to decimal `MB` (`1 MiB = 1.048576 MB`). The total is displayed in decimal `GB` to one decimal place. Set a maximum usage in the preferences to show progress toward that limit. Leave the maximum at `0` to show usage only.
 
