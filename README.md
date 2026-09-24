@@ -15,7 +15,7 @@ Values reported in `MiB` are converted to decimal `MB` (`1 MiB = 1.048576 MB`). 
 - **Maximum usage:** decimal GB; `0` disables the progress bar.
 - When the status page cannot be read, the panel shows a warning icon; open the panel item for the error details and status page link.
 
-For a local install, copy this folder into `~/.local/share/gnome-shell/extensions/internetusage@t12e.dev/`, compile its settings schema with `glib-compile-schemas ~/.local/share/gnome-shell/extensions/internetusage@t12e.dev/schemas`, then enable **Login.net Usage** in the Extensions app. The extension preferences let you change the address, refresh interval, and usage limit.
+For a local install, copy this folder into `~/.local/share/gnome-shell/extensions/internetusage@iamt12e/`, compile its settings schema with `glib-compile-schemas ~/.local/share/gnome-shell/extensions/internetusage@iamt12e/schemas`, then enable **Login.net Usage** in the Extensions app. The extension preferences let you change the address, refresh interval, and usage limit.
 
 ## Test without logging out
 
@@ -28,7 +28,7 @@ dbus-run-session -- gnome-shell --devkit --wayland
 In the new Shell window, open a terminal and enable the extension:
 
 ```sh
-gnome-extensions enable internetusage@t12e.dev
+gnome-extensions enable internetusage@iamt12e
 ```
 
 For code changes, copy the updated files into the installed extension folder, compile the schema if it changed, then close the development Shell with `Alt`+`F2`, enter `debugexit`, and launch the command again. This runs separately from your regular desktop session. See the [GNOME extension development guide](https://gjs.guide/extensions/development/creating.html#testing-the-extension) for details.

@@ -1,5 +1,5 @@
 {
-  "uuid": "internetusage@t12e.dev",
+  "uuid": "internetusage@iamt12e",
   "name": "Login.net Usage",
   "description": "Show internet usage from a MikroTik hotspot status page",
   "settings-schema": "org.gnome.shell.extensions.internetusage",
