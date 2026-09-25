@@ -27,6 +27,25 @@ glib-compile-schemas ~/.local/share/gnome-shell/extensions/internetusage@iamt12e
 gnome-extensions enable internetusage@iamt12e
 ```
 
+### Install with an AI agent
+
+If you want an AI agent to install the extension, copy and send it this prompt:
+
+```text
+Install the Login.net Usage GNOME Shell extension for the current user, then verify that it is active.
+
+Before changing anything, confirm that this computer is running a GNOME session, that GNOME Shell is version 45, 46, 47, 48, 49, or 50, and that `git`, `glib-compile-schemas`, and `gnome-extensions` are available. If any check fails, stop and report the blocker. Do not use sudo or install system packages.
+
+Install from https://github.com/tanaka-mambinge/gnome-internet-usage.git into `~/.local/share/gnome-shell/extensions/internetusage@iamt12e`. If that destination already exists, do not overwrite or modify it; report what exists and ask me before proceeding.
+
+After confirming the destination does not exist, run these steps for the current user:
+1. Create `~/.local/share/gnome-shell/extensions` if needed.
+2. Clone the repository into `~/.local/share/gnome-shell/extensions/internetusage@iamt12e`.
+3. Compile its settings schema with `glib-compile-schemas ~/.local/share/gnome-shell/extensions/internetusage@iamt12e/schemas`.
+4. Enable the extension with `gnome-extensions enable internetusage@iamt12e`.
+5. Check `gnome-extensions info internetusage@iamt12e` and report whether its state is active. If any step fails, stop and report the error without trying another installation method.
+```
+
 The extension preferences let you change the status page address, refresh interval, and time format.
 
 ## Test without logging out
